@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Registrar equipo · Nexora{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('dashboard') }}">← Volver al panel</a>
+<section class="form-card">
+  <div class="eyebrow">INVENTARIO</div>
+  <h1>Registrar equipo</h1>
+  <p class="muted">Completa todos los campos para registrar el equipo.</p>
+  <form method="post" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>Concepto *
+      <input name="nombre" maxlength="200" required autofocus value="{{ request.form.get('nombre', '') }}">
+    </label>
+    <label>Marca *
+      <input name="marca" maxlength="100" required value="{{ request.form.get('marca', '') }}">
+    </label>
+    <label>Modelo *
+      <input name="modelo" maxlength="100" required value="{{ request.form.get('modelo', '') }}">
+    </label>
+    <label>Número de serie *
+      <input name="serial" maxlength="150" required value="{{ request.form.get('serial', '') }}">
+    </label>
+    <label>Usuario responsable *
+      <input name="usuario" maxlength="150" required value="{{ request.form.get('usuario', '') }}">
+    </label>
+    <label>Área *
+      <input name="area" maxlength="150" required value="{{ request.form.get('area', '') }}">
+    </label>
+    <label>Sede *
+      <select name="sede_id" required>
+        <option value="">Selecciona una sede</option>
+        {% for location in locations %}
+        <option value="{{ location.id }}" {% if request.form.get('sede_id') == location.id|string %}selected{% endif %}>{{ location.nombre }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Fecha de registro *
+      <div class="date-picker" data-date-picker>
+        <input type="hidden" name="fecha_registro" data-date-value value="{{ request.form.get('fecha_registro', '') }}">
+        <input id="registration-date-display" type="text" inputmode="none" autocomplete="off" placeholder="Selecciona una fecha" readonly required aria-required="true" aria-describedby="registration-date-error" data-date-display value="{{ request.form.get('fecha_registro', '') }}">
+        <button class="date-picker-toggle" type="button" aria-label="Abrir calendario" aria-expanded="false" data-calendar-toggle>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+        </button>
+        <div class="date-picker-popover" role="dialog" aria-label="Seleccionar fecha de registro" hidden data-calendar>
+          <div class="date-picker-heading">
+            <button type="button" aria-label="Mes anterior" data-calendar-previous>‹</button>
+            <strong data-calendar-month></strong>
+            <button type="button" aria-label="Mes siguiente" data-calendar-next>›</button>
+          </div>
+          <div class="date-picker-weekdays" aria-hidden="true">
+            <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span>
+          </div>
+          <div class="date-picker-days" role="grid" data-calendar-days></div>
+        </div>
+      </div>
+      <span class="date-picker-error" id="registration-date-error" role="alert" hidden data-date-error>Selecciona una fecha de registro.</span>
+    </label>
+    <div class="form-actions">
+      <a class="button button-quiet" href="{{ url_for('dashboard') }}">Cancelar</a>
+      <button class="button button-primary" type="submit">Guardar equipo</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

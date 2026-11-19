@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Mantenimientos realizados · Nexora{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('dashboard') }}">← Volver al panel</a>
+<section class="page-heading">
+  <div><div class="eyebrow">HISTORIAL</div><h1>Mantenimientos realizados</h1><p class="muted">Registro completo de mantenimientos ejecutados.</p></div>
+  <a class="button button-primary" href="{{ url_for('new_maintenance', source='completed') }}">+ Registrar mantenimiento</a>
+</section>
+<section class="panel">
+  <div class="section-heading"><div><div class="eyebrow">ACTIVIDAD</div><h2>Mantenimientos realizados</h2></div><span class="count">{{ maintenance|length }} registros</span></div>
+  {% if maintenance %}
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Equipo</th><th>Fecha</th><th>Tipo</th><th>Estado final</th><th>Descripción</th><th>Técnico</th><th>Costo</th><th></th></tr></thead>
+      <tbody>
+        {% for item in maintenance %}
+        <tr>
+          <td class="strong">{{ item.equipo }}</td><td>{{ item.fecha }}</td><td><span class="badge {% if item.tipo|lower == 'preventivo' %}badge-yellow{% else %}badge-orange{% endif %}">{{ item.tipo }}</span></td><td>{{ item.estado_final or "—" }}</td><td>{{ item.descripcion or "—" }}</td><td>{{ item.tecnico or "—" }}</td><td>${{ "%.2f"|format(item.costo or 0) }}</td>
+          <td class="row-actions">
+            <form method="post" action="{{ url_for('remove_maintenance', maintenance_id=item.id) }}" data-confirm-delete>
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="return_to" value="completed_maintenances">
+              <button class="text-button" type="submit">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty-inline">No hay mantenimientos realizados registrados.</p>
+  {% endif %}
+  <dialog class="delete-confirm-dialog" aria-labelledby="delete-confirm-title" aria-describedby="delete-confirm-description" data-delete-confirm-dialog>
+    <h2 id="delete-confirm-title">¿Deseas continuar?</h2>
+    <p id="delete-confirm-description">Se eliminará este mantenimiento y también su registro del historial.</p>
+    <div class="delete-confirm-actions">
+      <button class="button button-quiet" type="button" data-delete-cancel>Cancelar</button>
+      <button class="button button-danger" type="button" data-delete-accept>Eliminar</button>
+    </div>
+  </dialog>
+</section>
+{% endblock %}

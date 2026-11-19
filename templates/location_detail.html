@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ location.nombre }} · Nexora{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('locations') }}">← Volver a sedes</a>
+<section class="page-heading">
+  <div>
+    <div class="eyebrow">SEDE</div>
+    <h1>{{ location.nombre }}</h1>
+    <p class="muted">Técnicos y equipos registrados en esta sede.</p>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="section-heading">
+    <div><div class="eyebrow">PERSONAL</div><h2>Técnicos de la sede</h2></div>
+    <span class="count">{{ users|length }} usuarios</span>
+  </div>
+  {% if users %}
+  <div class="user-list">
+    {% for user in users %}
+    <article class="user-card">
+      <div class="user-card-heading">
+        <div>
+          <h3>{{ user.display_name }}</h3>
+          <span class="muted">@{{ user.username }}</span>
+          <span class="badge {% if user.is_active %}badge-green{% else %}badge-red{% endif %}">
+            {{ "Activa" if user.is_active else "Desactivada" }}
+          </span>
+          <span class="badge {% if user.role == 'admin' %}badge-admin{% else %}badge-neutral{% endif %}">
+            {{ "Administrador" if user.role == "admin" else "Usuario" }}
+          </span>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-inline">No hay usuarios asignados a esta sede.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <div class="section-heading">
+    <div><div class="eyebrow">INVENTARIO</div><h2>Equipos de la sede</h2></div>
+    <span class="count">{{ equipment|length }} equipos</span>
+  </div>
+  {% if equipment %}
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Equipo</th><th>Marca / modelo</th><th>Serie</th><th>Responsable</th><th>Área</th><th>Estado</th></tr></thead>
+      <tbody>
+        {% for item in equipment %}
+        <tr>
+          <td class="strong">{{ item.nombre }}</td>
+          <td>{{ item.marca or "—" }} {{ item.modelo or "" }}</td>
+          <td>{{ item.serial or "—" }}</td>
+          <td>{{ item.usuario or "—" }}</td>
+          <td>{{ item.area or "—" }}</td>
+          <td><span class="badge {% if (item.estado or 'Activo')|lower == 'activo' %}badge-green{% else %}badge-red{% endif %}">{{ item.estado or "Activo" }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty-inline">No hay equipos asignados a esta sede.</p>
+  {% endif %}
+</section>
+{% endblock %}

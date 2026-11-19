@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080f1c">
+  <title>{% block title %}Nexora{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body class="{% if current_user %}has-sidebar{% endif %}">
+  <header class="topbar">
+    {% if current_user %}
+      <button class="sidebar-toggle" type="button" aria-controls="app-sidebar" aria-expanded="true" aria-label="Contraer menú" data-sidebar-toggle>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    {% endif %}
+    <a class="brand" href="{{ url_for('dashboard') if current_user else url_for('login') }}">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 40 40">
+          <path class="brand-gear" d="M17 3h6l1.2 3.5 3 1.2 3.3-1.6 4.2 4.2-1.6 3.3 1.2 3L38 19v6l-3.5 1.2-1.2 3 1.6 3.3-4.2 4.2-3.3-1.6-3 1.2L23 40h-6l-1.2-3.5-3-1.2-3.3 1.6-4.2-4.2 1.6-3.3-1.2-3L2 25v-6l3.5-1.2 1.2-3-1.6-3.3 4.2-4.2 3.3 1.6 3-1.2L17 3Z" transform="translate(1 -1) scale(.95)"/>
+          <path d="M20 13.5v13M13.5 20h13"/>
+          <rect x="11" y="24" width="18" height="11" rx="1.5"/>
+          <rect x="14" y="27" width="4" height="4" rx=".5"/>
+          <rect x="22" y="27" width="4" height="4" rx=".5"/>
+        </svg>
+      </span>
+      <span>Nexora</span>
+    </a>
+    {% if current_user %}
+      <form class="topbar-search" method="get" action="{{ url_for('search') }}" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg>
+        <input type="search" name="q" value="{{ query if query is defined else '' }}" placeholder="Buscar equipo, usuario o mantenimiento..." aria-label="Buscar equipo, usuario o mantenimiento">
+        <button type="submit">Buscar</button>
+      </form>
+      <div class="notification-menu">
+        <button class="notification-button" type="button" aria-label="{{ notifications|length }} notificaciones" aria-expanded="false" data-notification-toggle>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg>
+          {% if notifications %}
+          <span class="notification-count">{{ notifications|length }}</span>
+          {% endif %}
+        </button>
+        <div class="notification-popover" data-notification-popover>
+          <div class="notification-heading">
+            <div><span class="eyebrow">ACTUALIZACIONES</span><strong>Notificaciones</strong></div>
+            {% if notifications %}<span class="notification-count-small">{{ notifications|length }} nuevas</span>{% endif %}
+          </div>
+          <div class="notification-list">
+            {% for notification in notifications %}
+            <article class="notification-item notification-{{ notification.kind }}">
+              <span class="notification-icon" aria-hidden="true">{% if notification.kind == "danger" %}!</span>{% else %}◆</span>{% endif %}
+              <div><strong>{{ notification.title }}</strong><span>{{ notification.detail }}</span></div>
+            </article>
+            {% else %}
+            <p class="notification-empty">No hay novedades de mantenimiento.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <span class="topbar-user">
+        <span class="profile-avatar" aria-hidden="true">{{ (current_user['display_name'] or current_user['username'])[0]|upper }}</span>
+        <span class="profile-copy">
+          <strong>{{ current_user['display_name'] or current_user['username'] }}</strong>
+          <small>{% if current_user['role'] == 'admin' %}Administrador{% else %}Usuario{% endif %}</small>
+        </span>
+      </span>
+    {% endif %}
+  </header>
+
+  {% if current_user %}
+    <aside class="sidebar" id="app-sidebar" aria-label="Navegación principal">
+      <div class="sidebar-caption">ESPACIO DE TRABAJO</div>
+      <nav class="sidebar-nav">
+        <a class="sidebar-link {% if request.endpoint == 'dashboard' %}is-active{% endif %}" href="{{ url_for('dashboard') }}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg><span>Resumen</span>
+        </a>
+        <a class="sidebar-link {% if request.endpoint == 'equipment_list' %}is-active{% endif %}" href="{{ url_for('equipment_list') }}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="M3 12l9 4 9-4M3 17l9 4 9-4"/></svg><span>Equipos</span>
+        </a>
+        <a class="sidebar-link {% if request.endpoint == 'scheduled_maintenances' %}is-active{% endif %}" href="{{ url_for('scheduled_maintenances') }}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="m8 16 2.5 2.5L16 13"/></svg><span>Mantenimientos programados</span>
+        </a>
+        <a class="sidebar-link {% if request.endpoint == 'completed_maintenances' %}is-active{% endif %}" href="{{ url_for('completed_maintenances') }}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m7.5 12 3 3 6-7"/></svg><span>Mantenimientos realizados</span>
+        </a>
+        {% if current_user['role'] == 'admin' %}
+          <a class="sidebar-link {% if request.endpoint == 'locations' %}is-active{% endif %}" href="{{ url_for('locations') }}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-5.2 7-12a7 7 0 1 0-14 0c0 6.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><span>Sedes</span>
+          </a>
+        {% endif %}
+        {% if current_user['role'] == 'admin' %}
+          <a class="sidebar-link {% if request.endpoint == 'users' %}is-active{% endif %}" href="{{ url_for('users') }}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 0 1 12 0v1M16 5.5a3 3 0 0 1 0 5.8M18 14a5 5 0 0 1 3 4.5V20"/></svg><span>Usuarios</span>
+          </a>
+        {% endif %}
+      </nav>
+      <div class="sidebar-bottom">
+        <a class="sidebar-link {% if request.endpoint == 'change_own_password' %}is-active{% endif %}" href="{{ url_for('change_own_password') }}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.8c-1.1 1-1.7 1.3-1.7 2.7M12 17h.01"/></svg><span>Cuenta y seguridad</span>
+        </a>
+        <form method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="sidebar-link sidebar-logout" type="submit">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg><span>Cerrar sesión</span>
+          </button>
+        </form>
+      </div>
+    </aside>
+    <button class="sidebar-scrim" type="button" aria-label="Cerrar menú" data-sidebar-close></button>
+  {% endif %}
+
+  <main class="page">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="notices" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="notice notice-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">Nexora · Gestión inteligente de mantenimiento</footer>
+</body>
+</html>

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Usuarios · Nexora{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('dashboard') }}">← Volver al panel</a>
+<section class="page-heading">
+  <div>
+    <div class="eyebrow">ADMINISTRACIÓN</div>
+    <h1>Usuarios</h1>
+    <p class="muted">Crea cuentas y administra nombres, contraseñas y acceso.</p>
+  </div>
+</section>
+
+<section class="form-card user-create-card">
+  <div class="eyebrow">NUEVA CUENTA</div>
+  <h2>Registrar persona</h2>
+  <p class="muted">Comparte la contraseña inicial con la persona y pídele que la cambie al entrar.</p>
+  <form method="post" action="{{ url_for('create_user') }}" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>Nombre visible
+      <input name="display_name" maxlength="80" autocomplete="off" required>
+    </label>
+    <label>Nombre de usuario
+      <input name="username" minlength="3" maxlength="64" pattern="[A-Za-z0-9_.@-]{3,64}" autocomplete="off" required>
+    </label>
+    <label>Sede *
+      <select name="sede_id" required>
+        <option value="" selected disabled>Selecciona una sede</option>
+        {% for location in locations %}
+        <option value="{{ location.id }}">{{ location.nombre }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Contraseña inicial (mínimo 12 caracteres)
+      <input name="password" type="password" minlength="12" autocomplete="new-password" required>
+    </label>
+    <div class="form-actions">
+      <button class="button button-primary" type="submit">Crear cuenta</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel users-panel">
+  <div class="section-heading">
+    <div><div class="eyebrow">CUENTAS</div><h2>Personas registradas</h2></div>
+    <span class="count">{{ accounts|length }} cuentas</span>
+  </div>
+  <div class="user-list">
+    {% for account in accounts %}
+    <article class="user-card">
+      <div class="user-card-heading">
+        <div>
+          <h3>{{ account.display_name }}{% if account.id == current_user['id'] %} <span class="muted">(tú)</span>{% endif %}</h3>
+          <span class="muted">@{{ account.username }}</span>
+          <span class="muted">Sede: {{ account.sede_nombre or "Sin sede asignada" }}</span>
+          <span class="badge {% if account.is_active %}badge-green{% else %}badge-red{% endif %}">
+            {% if account.is_active %}Activa{% else %}Desactivada{% endif %}
+          </span>
+          {% if account.role == 'admin' %}<span class="badge badge-admin">Administrador</span>{% else %}<span class="badge badge-neutral">Usuario</span>{% endif %}
+        </div>
+      </div>
+      <div class="user-actions-grid">
+        <form method="post" action="{{ url_for('update_user', user_id=account.id) }}" class="inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <label>Nombre visible
+            <input name="display_name" value="{{ account.display_name }}" maxlength="80" required>
+          </label>
+          <label>Nombre de usuario
+            <input name="username" value="{{ account.username }}" minlength="3" maxlength="64" pattern="[A-Za-z0-9_.@-]{3,64}" required>
+          </label>
+          <label>Sede *
+            <select name="sede_id" required>
+              <option value="" {% if not account.sede_id %}selected{% endif %} disabled>Selecciona una sede</option>
+              {% for location in locations %}
+              <option value="{{ location.id }}" {% if account.sede_id == location.id %}selected{% endif %}>{{ location.nombre }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <button class="button button-quiet" type="submit">Guardar cambios</button>
+        </form>
+        <form method="post" action="{{ url_for('reset_user_password', user_id=account.id) }}" class="inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <label>Nueva contraseña (mínimo 12 caracteres)
+            <input name="password" type="password" minlength="12" autocomplete="new-password" required>
+          </label>
+          <button class="button button-quiet" type="submit">Restablecer contraseña</button>
+        </form>
+        <form method="post" action="{{ url_for('toggle_user', user_id=account.id) }}" class="toggle-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="button {% if account.is_active %}button-danger{% else %}button-quiet{% endif %}" type="submit" {% if account.id == current_user['id'] %}disabled title="No puedes desactivar tu propia cuenta"{% endif %}>
+            {% if account.is_active %}Desactivar cuenta{% else %}Activar cuenta{% endif %}
+          </button>
+        </form>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

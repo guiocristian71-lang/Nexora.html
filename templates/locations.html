@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Sedes · Nexora{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('dashboard') }}">← Volver al panel</a>
+<section class="page-heading">
+  <div>
+    <div class="eyebrow">ESPACIO DE TRABAJO</div>
+    <h1>Sedes</h1>
+    <p class="muted">Administra las ubicaciones y consulta sus equipos registrados.</p>
+  </div>
+</section>
+
+<section class="form-card location-create-card">
+  <div class="eyebrow">NUEVA SEDE</div>
+  <h2>Añadir sede</h2>
+  <form method="post" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>Nombre de la sede
+      <input name="nombre" maxlength="100" placeholder="Ejemplo: Bucaramanga" required autofocus>
+    </label>
+    <div class="form-actions">
+      <button class="button button-primary" type="submit">Añadir sede</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel locations-panel">
+  <div class="section-heading">
+    <div><div class="eyebrow">UBICACIONES</div><h2>Sedes registradas</h2></div>
+    <span class="count">{{ locations|length }} sedes</span>
+  </div>
+  {% if locations %}
+  <div class="location-grid">
+    {% for location in locations %}
+    <article class="location-card">
+      <span class="location-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 21s7-5.2 7-12a7 7 0 1 0-14 0c0 6.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      </span>
+      <a href="{{ url_for('location_detail', location_id=location.id) }}">
+      <div>
+        <h3>{{ location.nombre }}</h3>
+        <strong>{{ location.equipment_count }}</strong>
+        <span>{{ "equipos registrados" if location.equipment_count != 1 else "equipo registrado" }}</span>
+      </div>
+      </a>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-inline">No hay sedes registradas.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Buscar · Nexora{% endblock %}
+{% block content %}
+<section class="page-heading">
+  <div>
+    <div class="eyebrow">BUSCADOR GLOBAL</div>
+    <h1>Resultados de búsqueda</h1>
+    {% if query %}
+    <p class="muted">Coincidencias para "<strong>{{ query }}</strong>".</p>
+    {% else %}
+    <p class="muted">Busca por equipo, responsable, serie, usuario o mantenimiento.</p>
+    {% endif %}
+  </div>
+</section>
+
+{% if not query %}
+<section class="panel">
+  <div class="empty-state">
+    <span class="empty-icon">⌕</span>
+    <h3>Escribe algo para buscar</h3>
+    <p>Usa la barra superior para encontrar información.</p>
+  </div>
+</section>
+{% else %}
+{% if equipment_results %}
+<section class="panel search-panel">
+  <div class="section-heading"><div><div class="eyebrow">INVENTARIO</div><h2>Equipos</h2></div><span class="count">{{ equipment_results|length }} resultados</span></div>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Equipo</th><th>Marca / modelo</th><th>Serie</th><th>Responsable</th><th>Área</th><th>Sede</th><th></th></tr></thead>
+      <tbody>
+        {% for item in equipment_results %}
+        <tr>
+          <td class="strong">{{ item.nombre }}</td>
+          <td>{{ item.marca or "—" }} {{ item.modelo or "" }}</td>
+          <td>{{ item.serial or "—" }}</td>
+          <td>{{ item.usuario or "—" }}</td>
+          <td>{{ item.area or "—" }}</td>
+          <td>{{ item.sede_nombre or "Sin sede" }}</td>
+          <td><a class="text-link" href="{{ url_for('equipment_history', equipment_id=item.id) }}">Ver historial</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+{% if maintenance_results %}
+<section class="panel search-panel">
+  <div class="section-heading"><div><div class="eyebrow">ACTIVIDAD</div><h2>Mantenimientos</h2></div><span class="count">{{ maintenance_results|length }} resultados</span></div>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Equipo</th><th>Fecha</th><th>Tipo</th><th>Técnico</th><th>Descripción</th><th>Próximo</th></tr></thead>
+      <tbody>
+        {% for item in maintenance_results %}
+        <tr>
+          <td class="strong">{{ item.equipo }}</td>
+          <td>{{ item.fecha }}</td>
+          <td><span class="badge {% if item.tipo|lower == 'preventivo' %}badge-yellow{% else %}badge-orange{% endif %}">{{ item.tipo }}</span></td>
+          <td>{{ item.tecnico or "—" }}</td>
+          <td>{{ item.descripcion or "—" }}</td>
+          <td>{{ item.proximo_mantenimiento or "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+{% if current_user['role'] == 'admin' and account_results %}
+<section class="panel search-panel">
+  <div class="section-heading"><div><div class="eyebrow">ADMINISTRACIÓN</div><h2>Usuarios</h2></div><span class="count">{{ account_results|length }} resultados</span></div>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Usuario</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        {% for account in account_results %}
+        <tr>
+          <td class="strong">{{ account.display_name or account.username }} <span class="muted">@{{ account.username }}</span></td>
+          <td>{{ "Administrador" if account.role == "admin" else "Usuario" }}</td>
+          <td><span class="badge {% if account.is_active %}badge-green{% else %}badge-red{% endif %}">{{ "Activa" if account.is_active else "Desactivada" }}</span></td>
+          <td><a class="text-link" href="{{ url_for('users') }}">Administrar</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% if not equipment_results and not maintenance_results and not account_results %}
+<section class="panel">
+  <p class="empty-inline">No se encontraron coincidencias.</p>
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}

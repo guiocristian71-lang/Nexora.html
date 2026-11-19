@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Historial · {{ equipment.nombre }} · Nexora{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('dashboard') }}">← Volver al panel</a>
+<section class="page-heading">
+  <div><div class="eyebrow">HISTORIAL DEL EQUIPO</div><h1>{{ equipment.nombre }}</h1><p class="muted">{{ equipment.marca or "" }} {{ equipment.modelo or "" }}{% if equipment.serial %} · Serie {{ equipment.serial }}{% endif %}</p></div>
+  <a class="button button-primary" href="{{ url_for('new_maintenance') }}">+ Mantenimiento</a>
+</section>
+<section class="panel">
+  <div class="section-heading"><div><h2>Mantenimientos</h2></div><span class="count">{{ history|length }} registros</span></div>
+  {% if history %}
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Técnico</th><th>Costo</th><th>Próximo</th></tr></thead>
+      <tbody>
+        {% for item in history %}
+        <tr><td>{{ item.fecha }}</td><td>{{ item.tipo }}</td><td>{{ item.descripcion or "—" }}</td><td>{{ item.tecnico or "—" }}</td><td>${{ "%.2f"|format(item.costo or 0) }}</td><td>{{ item.proximo_mantenimiento or "—" }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><h3>Sin historial todavía</h3><p>Este equipo aún no tiene mantenimientos registrados.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

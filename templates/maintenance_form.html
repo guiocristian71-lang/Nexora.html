@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Programar mantenimiento · Nexora{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('dashboard') }}">← Volver al panel</a>
+<section class="form-card">
+  <div class="eyebrow">MANTENIMIENTO</div>
+  <h1>{% if from_completed %}Registrar mantenimiento realizado{% else %}Programar mantenimiento{% endif %}</h1>
+  <p class="muted">{% if from_completed %}Registra el mantenimiento ejecutado{% else %}Programa la próxima fecha{% endif %}</p>
+  {% if equipment %}
+  <form method="post" action="{{ url_for('new_maintenance', source='completed') if from_completed else url_for('new_maintenance') }}" class="form-grid" data-maintenance-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label class="full-width">Equipo *
+      <select name="equipo_id" required data-maintenance-equipment>
+        <option value="">Selecciona un equipo</option>
+        {% for item in equipment %}
+        <option value="{{ item.id }}" data-registration-date="{{ item.fecha_registro or '' }}" data-equipment-status="{{ item.estado or '' }}" {% if request.form.get('equipo_id') == item.id|string %}selected{% endif %}>{{ item.nombre }}{% if item.serial %} · {{ item.serial }}{% endif %}{% if item.estado and item.estado|lower == 'inactivo' %} · Inactivo{% endif %}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>{% if from_completed %}Fecha de mantenimiento *{% else %}Fecha de ingreso *{% endif %}
+      {% if from_completed %}
+      <input name="fecha" type="date" min="{{ today }}" required value="{{ request.form.get('fecha', today) }}" data-maintenance-dependent>
+      <span class="date-picker-error" role="alert" hidden data-inactive-equipment-error>El equipo seleccionado está inactivo.</span>
+      {% else %}
+      <input id="maintenance-review-date" type="text" value="" readonly required aria-readonly="true" data-maintenance-review-date>
+      {% endif %}
+    </label>
+    <label>Tipo *
+      <select name="tipo" required data-maintenance-dependent>
+        <option value="">Selecciona el tipo</option>
+        <option value="Preventivo" {% if request.form.get('tipo') == 'Preventivo' %}selected{% endif %}>Preventivo</option>
+        {% if from_completed %}
+        <option value="Correctivo" {% if request.form.get('tipo') == 'Correctivo' %}selected{% endif %}>Correctivo</option>
+        {% endif %}
+      </select>
+    </label>
+    {% if from_completed %}
+    <label>Estado final *
+      <select name="estado_final" required data-maintenance-dependent>
+        <option value="">Selecciona el estado final</option>
+        {% for status in final_maintenance_statuses %}
+        <option value="{{ status }}" {% if request.form.get('estado_final') == status %}selected{% endif %}>{{ status }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    {% endif %}
+    {% if from_completed %}
+    <label>Costo total *
+      <span class="currency-input">
+        <span class="currency-prefix" aria-hidden="true">$</span>
+        <input name="costo" type="number" min="0" step="0.01" required value="{{ request.form.get('costo', '') }}" data-maintenance-dependent>
+      </span>
+    </label>
+    {% endif %}
+    <label>Técnico responsable *
+      <input name="tecnico" maxlength="150" required value="{{ request.form.get('tecnico', '') }}" data-maintenance-dependent>
+    </label>
+    {% if from_completed %}
+    <label class="full-width">Descripción (opcional)
+      <textarea name="descripcion" rows="3" data-maintenance-dependent>{{ request.form.get('descripcion', '') }}</textarea>
+    </label>
+    {% else %}
+    <label>Próximo mantenimiento *
+      <input name="proximo_mantenimiento" type="date" required aria-describedby="next-maintenance-error" value="{{ request.form.get('proximo_mantenimiento', '') }}" data-maintenance-dependent data-next-maintenance>
+      <span id="next-maintenance-error" class="date-picker-error" role="alert" hidden data-next-maintenance-error>Fecha inválida.</span>
+    </label>
+    {% endif %}
+    <div class="form-actions">
+      <a class="button button-quiet" href="{{ url_for('dashboard') }}">Cancelar</a>
+      <button class="button button-primary" type="submit" data-maintenance-dependent>Guardar</button>
+    </div>
+  </form>
+  {% else %}
+  <div class="empty-state"><span class="empty-icon">＋</span><h3>Primero registra un equipo</h3><p>Necesitas un equipo para agregarle mantenimiento.</p><a class="button button-primary" href="{{ url_for('new_equipment') }}">Registrar equipo</a></div>
+  {% endif %}
+</section>
+{% endblock %}
